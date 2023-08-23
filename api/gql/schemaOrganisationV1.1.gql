@@ -1,0 +1,69 @@
+#Forretningsobjektet Myndighed er en udvidelse til forretningsobjektet Organisation. En myndighed har en lovudøvende funktion. Kommunerne og store dele af den øvrige offentlige administration er offentlige myndigheder. Objektet Myndighed tilknyttes en Organisation 
+# (The public authoirity)
+type Myndighed {
+    uuid: UUID!
+    # Myndighedskode er et tre- eller firecifret tal.   Enhver myndighedskode refererer til myndigheders data i CPR’s Myndighedsregister. Myndighedskoden er unik
+    myndighedsKode: String!
+}
+
+#Forretningsobjektet Virksomhed er en udvidelse til Organisation, så der kan registreres et CVR-nummer, og dermed etableres en relation til CVR-registeret. En virksomhed er oprettet i CVR-registreret med et CVR-nummer, der efter opslag i CVR-registreret kan give adgang til oplysninger om virksomheden. Der registreres derfor alene CVR-nummer i Fælleskommunalt Organisationssystem.
+# (The business as registered by The Danish business Authority)
+type Virksomhed {
+    uuid: UUID!
+    # CVR-nummer er virksomhedens identifikationsnummer.
+    cvrNummerTekst: CVR!
+}
+
+# Forretningsobjektet OrganisationEnhed kan være et center, en afdeling, en sektion, et kontor, et team, en institiution eller lignende. Kommunens administrative organisation er opbygget af OrganisationEnheder.
+#(The organisation unit)
+type OrganisationEnhed {
+    uuid: UUID!
+    # Officielt navn på OrganisationEnheden
+    enhedNavn: String!
+    # Brugervendt identifikation af objektet, dvs. identifikation fra kildesystemet for data
+    brugervendtNoegle: String
+    # Enhedens underliggende enheder
+    underliggendeEnheder: [OrganisationEnhed!]!
+    overordnetEnhed: OrganisationEnhed
+    
+    tilstand: Tilstand! 
+    tilhoerer: Organisation!
+}
+
+type Tilstand { 
+    status: TilstandStatus!
+    fraTidspunkt: DateTime # https://en.wikipedia.org/wiki/ISO_8601 
+    tilTidspunkt: DateTime 
+}
+
+# The valid statuses
+enum TilstandStatus {
+    AKTIV
+    INAKTIV
+}
+
+# Forretningsobjektet Organisation repræsenterer en juridisk enhed. En kommune er et eksempel på en organisation. En organisation skal altid tilknyttes et virksomhedsobjekt og for myndigheders vedkommende et myndighedsobjekt. Dermed sikres, at CVR-nummer og eventuel myndighedskode kan føres tilbage til den gældende organisation.
+#A legal entity, typically a municipality 
+type Organisation {
+    uuid: UUID!
+    #Brugervendt identifikation af objektet
+    brugervendtNoegle: String!
+    #Myndighed
+    myndighed: Myndighed
+    #Virksomhed
+    virksomhed: Virksomhed!
+    #Rod-noden
+    organisationEnhed: OrganisationEnhed!
+}
+
+type Query {
+  	
+  	# If the root node is in the result, it is the first element of the list
+   	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!): [OrganisationEnhed]
+    organisationEnhed(uuid: UUID!): OrganisationEnhed 
+    organisation(cvr: CVR!, status: TilstandStatus!): Organisation
+}
+
+scalar CVR
+scalar UUID
+scalar DateTime
