@@ -61,7 +61,7 @@ type Query {
   	# If the root node is in the result, it is the first element of the list
    	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!): [OrganisationEnhed]
     organisationEnhed(uuid: UUID!): OrganisationEnhed 
-    organisation(cvr: CVR!, status: TilstandStatus!): Organisation
+    organisation(cvr: CVR!): Organisation
 }
 
 scalar CVR
