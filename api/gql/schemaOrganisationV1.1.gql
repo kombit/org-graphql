@@ -26,7 +26,11 @@ type OrganisationEnhed {
     underliggendeEnheder: [OrganisationEnhed!]!
     overordnetEnhed: OrganisationEnhed
     
-    tilstand: Tilstand! 
+    # [tilstand] -> first element would be now.
+    # the rest would be future states.
+    # Tilstand will not overlap.
+    # The liste will not be empty
+    tilstandListe: [Tilstand!]! 
     tilhoerer: Organisation!
 }
 
@@ -41,6 +45,7 @@ enum TilstandStatus {
     AKTIV
     INAKTIV
 }
+
 
 # Forretningsobjektet Organisation repræsenterer en juridisk enhed. En kommune er et eksempel på en organisation. En organisation skal altid tilknyttes et virksomhedsobjekt og for myndigheders vedkommende et myndighedsobjekt. Dermed sikres, at CVR-nummer og eventuel myndighedskode kan føres tilbage til den gældende organisation.
 #A legal entity, typically a municipality 
@@ -60,8 +65,10 @@ type Query {
   	
   	# If the root node is in the result, it is the first element of the list
    	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!): [OrganisationEnhed]
+  
     organisationEnhed(uuid: UUID!): OrganisationEnhed 
-    organisation(cvr: CVR!): Organisation
+
+  	organisation(cvr: CVR!): Organisation
 }
 
 scalar CVR
