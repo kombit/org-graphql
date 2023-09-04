@@ -1,8 +1,8 @@
-#Forretningsobjektet Myndighed er en udvidelse til forretningsobjektet Organisation. En myndighed har en lovudøvende funktion. Kommunerne og store dele af den øvrige offentlige administration er offentlige myndigheder. Objektet Myndighed tilknyttes en Organisation 
+# Forretningsobjektet Myndighed er en udvidelse til forretningsobjektet Organisation. En myndighed har en lovudøvende funktion. Kommunerne og store dele af den øvrige offentlige administration er offentlige myndigheder. Objektet Myndighed tilknyttes en Organisation 
 # (The public authoirity)
 type Myndighed {
     uuid: UUID!
-    # Myndighedskode er et tre- eller firecifret tal.   Enhver myndighedskode refererer til myndigheders data i CPR’s Myndighedsregister. Myndighedskoden er unik
+    # Number, 3 or 4 digits, which identifies an authority.
     myndighedsKode: String!
 }
 
@@ -10,7 +10,7 @@ type Myndighed {
 # (The business as registered by The Danish business Authority)
 type Virksomhed {
     uuid: UUID!
-    # CVR-nummer er virksomhedens identifikationsnummer.
+    # Number identifying the compagny
     cvrNummerTekst: CVR!
 }
 
@@ -18,29 +18,40 @@ type Virksomhed {
 #(The organisation unit)
 type OrganisationEnhed {
     uuid: UUID!
-    # Officielt navn på OrganisationEnheden
+    
+    # Name of the Unit
     enhedNavn: String!
     # Brugervendt identifikation af objektet, dvs. identifikation fra kildesystemet for data
+
+  	# Externally given key
     brugervendtNoegle: String
-    # Enhedens underliggende enheder
+
+  	# The child nodes 
     underliggendeEnheder: [OrganisationEnhed!]!
+    
+  	# The parrent node
     overordnetEnhed: OrganisationEnhed
     
-    # [tilstand] -> first element would be now.
-    # the rest would be future states.
-    # Tilstand will not overlap.
-    # The liste will not be empty
-    tilstandListe: [Tilstand!]! 
+    # The state object
+    tilstand: Tilstand!
+    
+  	# The Organization
     tilhoerer: Organisation!
 }
 
+# The state of the object with a interval of when the state is in effect [fraTidspunkt, tilTidspunkt[ 
 type Tilstand { 
+    # The state of an object
     status: TilstandStatus!
-    fraTidspunkt: DateTime # https://en.wikipedia.org/wiki/ISO_8601 
+    	
+    # The state is in effect from - including the time. 
+    fraTidspunkt: DateTime
+  
+    # The state is in effect to - excluding the time
     tilTidspunkt: DateTime 
 }
 
-# The valid statuses
+# The valid states
 enum TilstandStatus {
     AKTIV
     INAKTIV
@@ -51,13 +62,13 @@ enum TilstandStatus {
 #A legal entity, typically a municipality 
 type Organisation {
     uuid: UUID!
-    #Brugervendt identifikation af objektet
+    # Externally given key
     brugervendtNoegle: String!
-    #Myndighed
+    # Myndighed
     myndighed: Myndighed
-    #Virksomhed
+    # Virksomhed
     virksomhed: Virksomhed!
-    #Rod-noden
+    # The root entity
     organisationEnhed: OrganisationEnhed!
 }
 
@@ -65,12 +76,11 @@ type Query {
   	
   	# If the root node is in the result, it is the first element of the list
    	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!): [OrganisationEnhed]
-  
     organisationEnhed(uuid: UUID!): OrganisationEnhed 
-
   	organisation(cvr: CVR!): Organisation
 }
 
 scalar CVR
 scalar UUID
+# https://en.wikipedia.org/wiki/ISO_8601 
 scalar DateTime
