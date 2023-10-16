@@ -14,7 +14,6 @@ type Virksomhed {
     cvrNummerTekst: CVR!
 }
 
-
 # what do we call this kind of relation where we have type, rolle and index ???
 type KlassifikationRelation {
   type: UUID!
@@ -36,7 +35,6 @@ type Adresse {
     # Details from Klassifikation
    	klassifikation: KlassifikationRelation!    
 }
-
 
 # Forretningsobjektet OrganisationEnhed kan være et center, en afdeling, en sektion, et kontor, et team, en institiution eller lignende. Kommunens administrative organisation er opbygget af OrganisationEnheder.
 #(The organisation unit)
@@ -62,7 +60,7 @@ type OrganisationEnhed {
   	# The Organization
     tilhoerer: Organisation!
   
-  	adresser: [Adresse]
+  	adresser: [Adresse!]!
   
 }
 
@@ -103,14 +101,14 @@ type Organisation {
 }
 
 
-#some special docs ....... 
-
 type Query {
   	
   	# If the root node is in the result, it is the first element of the list
-   	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!): [OrganisationEnhed]
+    # adressTitle. Filter the adress list. 
+   	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, adresseTitle:[String]): [OrganisationEnhed]
     organisationEnhed(uuid: UUID!): OrganisationEnhed 
   	organisation(cvr: CVR!): Organisation
+  
 }
 
 
