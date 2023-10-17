@@ -36,6 +36,21 @@ type Adresse {
    	klassifikation: KlassifikationRelation!    
 }
 
+type Opgave {
+	#uuid: UUID! doesn't exist, right?
+  
+  kleNummer:KLE
+  kleEmne: String
+  
+  # "Ansvarlig", "Udfoerende", "Informeret" # enum?
+  opgaveRolle:String
+  
+  # Details from Klassifikation
+  klassifikation: KlassifikationRelation!    
+  
+}
+
+
 # Forretningsobjektet OrganisationEnhed kan være et center, en afdeling, en sektion, et kontor, et team, en institiution eller lignende. Kommunens administrative organisation er opbygget af OrganisationEnheder.
 #(The organisation unit)
 type OrganisationEnhed {
@@ -61,6 +76,7 @@ type OrganisationEnhed {
     tilhoerer: Organisation!
   
   	adresser: [Adresse!]!
+    opgaver:[Opgave!]!
   
 }
 
@@ -105,12 +121,17 @@ type Query {
   	
   	# If the root node is in the result, it is the first element of the list
     # adressTitle. Filter the adress list. 
-   	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, adresseTitle:[String]): [OrganisationEnhed]
+    # Replace addressTitle list with definition in Enum? and allow filtering in query? same with opgaveRolle, but keep KLE    
+   	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, adresseTitle:[String], opgaver:[KLE]): [OrganisationEnhed]
     organisationEnhed(uuid: UUID!): OrganisationEnhed 
   	organisation(cvr: CVR!): Organisation
   
 }
 
+
+# String xx, xx.xx, or xx.xx.xx
+# How to handle wildcards? eg. xx.* = xx.y1 .. xx,yn
+scalar KLE
 
 scalar CVR
 scalar UUID
