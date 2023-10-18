@@ -16,34 +16,46 @@ type Virksomhed {
 
 # what do we call this kind of relation where we have type, rolle and index ???
 type KlassifikationRelation {
+  # The id of the relation type in Klassifikation, eg. 9b33c0a0-a566-4ec0-8200-325cb1e5bb9a for address for organization unit 
   type: UUID!
+  # The id of the relation role in Klassifikation, eg  80b610c6-314b-485a-a014-a9a1d7070bc4 for Postadresse
   rolle: UUID!
-  indeks: String  
+  
+  indeks: String!  
 }
 
+
 type Adresse {
-  
+    
+    #Id of the address, eg. "c31d2c7b-26fe-4a5f-b4da-f99961c78991"
   	uuid:  UUID!
+    
+    #The value of the address, eg. "Halfdansgade 10, 2., 2300 København S"
+	  adresseTekst: String!
   
+    brugervendtNoegleTekst:String
+  
+    # Details from Klassifikation  
     # Value from Klassification, eg. "Postadresse", "E-mail"  
     # If we can't obtain it from Klassification, it will be empty
     # There should be an error object with a warning in this case
-   	adresseTitel: String 
-	  adresseTekst:String!
-    brugervendtNoegleTekst:String
+   	adresseRolleTitel: String
+  	klassifikation: KlassifikationRelation!    
   
-    # Details from Klassifikation
-   	klassifikation: KlassifikationRelation!    
 }
 
 type Opgave {
-	#uuid: UUID! doesn't exist, right?
   
-  kleNummer:KLE
-  kleEmne: String
+  # ID, eg 3544e723-1a24-43e8-841a-efef55cb3e3c
+	uuid: UUID!
   
-  # "Ansvarlig", "Udfoerende", "Informeret" # enum?
-  opgaveRolle:String
+  # The number, eg. "04.05.00"
+  kleEmneNummer:KLE
+  # The title, eg. "Hundetoiletter i almindelighed"
+  kleEmneTitel: String
+  
+  # "Ansvarlig", "Udførende", "Informeret"
+  opgaveRolleTitel:String
   
   # Details from Klassifikation
   klassifikation: KlassifikationRelation!    
@@ -119,20 +131,16 @@ type Organisation {
 
 type Query {
   	
-  	# If the root node is in the result, it is the first element of the list
-    # adressTitle. Filter the adress list. 
-    # Replace addressTitle list with definition in Enum? and allow filtering in query? same with opgaveRolle, but keep KLE    
-   	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, adresseTitle:[String], opgaver:[KLE]): [OrganisationEnhed]
-    organisationEnhed(uuid: UUID!): OrganisationEnhed 
-  	organisation(cvr: CVR!): Organisation
-  
+ 	# If the root node is in the result, it is the first element of the list
+  organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:[KLE]): [OrganisationEnhed]
+  organisationEnhed(uuid: UUID!): OrganisationEnhed 
+  organisation(cvr: CVR!): Organisation
+ 
 }
-
 
 # String xx, xx.xx, or xx.xx.xx
 # How to handle wildcards? eg. xx.* = xx.y1 .. xx,yn
 scalar KLE
-
 scalar CVR
 scalar UUID
 # https://en.wikipedia.org/wiki/ISO_8601 
