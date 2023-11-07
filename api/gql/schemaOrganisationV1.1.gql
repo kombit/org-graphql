@@ -128,11 +128,16 @@ type Organisation {
     organisationEnhed: OrganisationEnhed!
 }
 
+# at least one of these have to be present 
+input KLEFilter {
+	rolle:UUID
+  kleNummer:[KLE!]!
+}
 
 type Query {
   	
  	# If the root node is in the result, it is the first element of the list
-  organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:[KLE]): [OrganisationEnhed]
+  organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter): [OrganisationEnhed]
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
   organisation(cvr: CVR!): Organisation
  
