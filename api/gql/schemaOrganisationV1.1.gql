@@ -24,7 +24,6 @@ type KlassifikationRelation {
   indeks: String!  
 }
 
-
 type Adresse {
     
     #Id of the address, eg. "c31d2c7b-26fe-4a5f-b4da-f99961c78991"
@@ -62,6 +61,19 @@ type Opgave {
   
 }
 
+#Logiske it-systemer, registeret i Fælleskommunalt Administrationsmodul. 
+# ()
+type ITSystem {
+ 
+  # The uuid of the IT-system in Fælleskommunalt Administrationsmodul
+  uuid: UUID!
+ 
+  # Name of the IT-Systemin Fælleskommunalt Administrationsmodul
+  navn: String
+  
+    
+}
+
 
 # Forretningsobjektet OrganisationEnhed kan være et center, en afdeling, en sektion, et kontor, et team, en institiution eller lignende. Kommunens administrative organisation er opbygget af OrganisationEnheder.
 #(The organisation unit)
@@ -89,8 +101,10 @@ type OrganisationEnhed {
   
   	adresser: [Adresse!]!
     opgaver:[Opgave!]!
+    itSystemer:[ITSystem!]!
   
 }
+
 
 # The state of the object with a interval of when the state is in effect [fraTidspunkt, tilTidspunkt[ 
 type Tilstand { 
@@ -128,7 +142,7 @@ type Organisation {
     organisationEnhed: OrganisationEnhed!
 }
 
-# at least one of these have to be present 
+# if rolle is omitted no units are filtered out base on rolle.
 input KLEFilter {
 	rolle:UUID
   kleNummer:[KLE!]!
@@ -137,16 +151,21 @@ input KLEFilter {
 type Query {
   	
  	# If the root node is in the result, it is the first element of the list
-  organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter): [OrganisationEnhed]
+  organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter, ITSystemer:[UUID!] ): [OrganisationEnhed]
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
   organisation(cvr: CVR!): Organisation
  
 }
 
 # String xx, xx.xx, or xx.xx.xx
-# How to handle wildcards? eg. xx.* = xx.y1 .. xx,yn
+# Right padded wildcards, '*', is supported
 scalar KLE
+
+# 8 digit number - ID of the business assigned by Danish business Authority 
 scalar CVR
+
+# Universally Unique IDentifier 
 scalar UUID
-# https://en.wikipedia.org/wiki/ISO_8601 
+
+# ISO 8601 
 scalar DateTime
