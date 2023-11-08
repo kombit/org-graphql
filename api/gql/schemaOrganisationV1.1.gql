@@ -99,7 +99,7 @@ type OrganisationEnhed {
   	# The Organization
     tilhoerer: Organisation!
   
-  	adresser: [Adresse!]!
+    adresser(rolle: [UUID!]): [Adresse!]!
     opgaver:[Opgave!]!
     itSystemer:[ITSystem!]!
   
