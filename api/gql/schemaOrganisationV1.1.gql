@@ -103,6 +103,10 @@ type OrganisationEnhed {
     opgaver:[Opgave!]!
     itSystemer:[ITSystem!]!
   
+    # Best practices ? documentation 
+    # Paging         ?        
+    #users:[Users!]!  
+  
 }
 
 
@@ -148,12 +152,52 @@ input KLEFilter {
   kleNummer:[KLE!]!
 }
 
+
+# https://arkitektur.digst.dk/specifikationer/organisation/oio-specifikation-af-model-organisation
+#
+type Medlemskab {
+  
+  medlemAf: OrganisationEnhed
+  
+  #FunktionNavn
+  medlemskabRolle: String
+  
+  # UUID to klassifikation 
+  #eg. 02e61900-33e0-407f-a2a7-22f70221f003/57553824-5ed0-4a64-b8aa-7e801df264f6/46c73630-f7ad-4000-9624-c06131cde671
+  funktionsTypeUUID: UUID
+  #Enhedsrolle (Arbejder i)/ ansat i/ Lederrolle
+  funktionsTypeTitel: String
+  
+      
+
+  # date from # calculated min of interval .... 
+  # date to   
+  
+    
+}
+
+
+type Bruger {
+  uuid: UUID!
+  person: Person
+  harMedlemsskab: [Medlemskab]
+  #adresser 
+  # Statsu
+}
+
+#one person can have multiple users ...... 
+type Person {
+  uuid: UUID!
+  # cpr name .... 
+}
+
 type Query {
   	
  	# If the root node is in the result, it is the first element of the list
   organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter, ITSystemer:[UUID!] ): [OrganisationEnhed]
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
   organisation(cvr: CVR!): Organisation
+  bruger(uuid: UUID!): Bruger
  
 }
 
