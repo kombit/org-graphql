@@ -106,6 +106,7 @@ type OrganisationEnhed {
     # Best practices ? documentation 
     # Paging         ?        
     #users:[Users!]!  
+   	medlemskaber: [Medlemskab!]!
   
 }
 
@@ -154,7 +155,8 @@ input KLEFilter {
 
 
 # https://arkitektur.digst.dk/specifikationer/organisation/oio-specifikation-af-model-organisation
-#
+# aka. organisatorisk tilknytning
+# 
 type Medlemskab {
   
   medlemAf: OrganisationEnhed
@@ -168,8 +170,11 @@ type Medlemskab {
   #Enhedsrolle (Arbejder i)/ ansat i/ Lederrolle
   funktionsTypeTitel: String
   
+  
+  start: DateTime
+  slut: DateTime
       
-
+  bruger:Bruger
   # date from # calculated min of interval .... 
   # date to   
   
@@ -181,8 +186,10 @@ type Bruger {
   uuid: UUID!
   person: Person
   harMedlemsskab: [Medlemskab]
-  #adresser 
-  # Statsu
+  adresser(rolle: [UUID!]): [Adresse!]!
+  # The state object
+  tilstand: Tilstand!
+  
 }
 
 #one person can have multiple users ...... 
@@ -197,6 +204,8 @@ type Query {
   organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter, ITSystemer:[UUID!] ): [OrganisationEnhed]
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
   organisation(cvr: CVR!): Organisation
+  
+  # What about tilstand???
   bruger(uuid: UUID!): Bruger
  
 }
@@ -208,7 +217,7 @@ scalar KLE
 # 8 digit number - ID of the business assigned by Danish business Authority 
 scalar CVR
 
-# Universally Unique IDentifier 
+# Universally Unique IDentifier (RFC4122)
 scalar UUID
 
 # ISO 8601 
