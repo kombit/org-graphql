@@ -103,10 +103,16 @@ type OrganisationEnhed {
     opgaver:[Opgave!]!
     itSystemer:[ITSystem!]!
   
+  
+  
     # Best practices ? documentation 
     # Paging         ?        
     #users:[Users!]!  
-   	medlemskaber: [Medlemskab!]!
+    #	medlemskaber: [Medlemskab!]!
+    #users: [UUID]
+    # bruger: [Bruger]
+    #users: [Medlemskab]
+     
   
 }
 
@@ -170,11 +176,11 @@ type Medlemskab {
   #Enhedsrolle (Arbejder i)/ ansat i/ Lederrolle
   funktionsTypeTitel: String
   
-  
+  # the dates of active employment ..... 
+  # narrow possible view. 
   start: DateTime
   slut: DateTime
       
-  bruger:Bruger
   # date from # calculated min of interval .... 
   # date to   
   
@@ -185,16 +191,15 @@ type Medlemskab {
 type Bruger {
   uuid: UUID!
   person: Person
-  harMedlemsskab: [Medlemskab]
+  harMedlemsskab(rolle: [UUID!]): [Medlemskab]
   adresser(rolle: [UUID!]): [Adresse!]!
-  # The state object
-  tilstand: Tilstand!
-  
+    
 }
 
 #one person can have multiple users ...... 
 type Person {
   uuid: UUID!
+    
   # cpr name .... 
 }
 
@@ -206,6 +211,8 @@ type Query {
   organisation(cvr: CVR!): Organisation
   
   # What about tilstand???
+  # Filter on eg. e-mail and other addresses 
+  # Only support for active users 
   bruger(uuid: UUID!): Bruger
  
 }
