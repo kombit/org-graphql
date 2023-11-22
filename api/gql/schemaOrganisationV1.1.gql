@@ -103,8 +103,7 @@ type OrganisationEnhed {
     opgaver:[Opgave!]!
     itSystemer:[ITSystem!]!
   
-  
-  
+ 
     # Best practices ? documentation 
     # Paging         ?        
     #users:[Users!]!  
@@ -162,14 +161,21 @@ input KLEFilter {
 
 # https://arkitektur.digst.dk/specifikationer/organisation/oio-specifikation-af-model-organisation
 # aka. organisatorisk tilknytning
-# 
+# Describes the relation between a Bruger(user) and OrganisationEnhed (Org. unit)
 type Medlemskab {
+
+  # uuid of the underlying organisationFunktion 
+  uuid: UUID!
   
+  # the related organisationsenhed 
   medlemAf: OrganisationEnhed
   
-  #FunktionNavn
+  # Typicaly a job title
   medlemskabRolle: String
   
+  # Externally given key
+  brugervendtNoegle: String
+    
   # UUID to klassifikation 
   #eg. 02e61900-33e0-407f-a2a7-22f70221f003/57553824-5ed0-4a64-b8aa-7e801df264f6/46c73630-f7ad-4000-9624-c06131cde671
   funktionsTypeUUID: UUID
@@ -190,9 +196,35 @@ type Medlemskab {
 
 type Bruger {
   uuid: UUID!
-  person: Person
-  harMedlemsskab(rolle: [UUID!]): [Medlemskab]
-  adresser(rolle: [UUID!]): [Adresse!]!
+  
+  # An unique name for the user in the Organization, typically the IT user name.
+  brugernavn:String!
+  
+  # Externally given key
+  brugervendtNoegle: String
+  
+  # UUID to klassifikation: 
+  # eg. 
+  # 9de1426d-2ffb-4d3b-95aa-2afdec22c133 for "Ekstern bruger"
+  # fe5bec29-0709-4b45-b935-2748ff554c7a for "Intern bruger"
+  # fb24bae4-beb1-4970-9a94-cf7ce215f63c, for "Non-Person Entity bruger" 
+  brugerTypeUUID:UUID!
+  
+  #The title from Klassifikation, 
+  #Ekstern bruger, Intern bruger, Non-Person Entity bruger
+  brugerTypeTitel: String
+  
+  tilstand: Tilstand
+
+  # Will be added later
+  #person: Person
+
+  #Will be added later 
+  #adresser(rolle: [UUID!]): [Adresse!]!
+  
+  # Only include Active in the list!
+  harMedlemsskab(rolle: [UUID!]): [Medlemskab!]!
+  
     
 }
 
@@ -210,10 +242,8 @@ type Query {
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
   organisation(cvr: CVR!): Organisation
   
-  # What about tilstand???
   # Filter on eg. e-mail and other addresses 
-  # Only support for active users 
-  bruger(uuid: UUID!): Bruger
+  bruger(uuid: [UUID!]!): [Bruger]
  
 }
 
