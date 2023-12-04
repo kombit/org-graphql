@@ -32,7 +32,7 @@ type Adresse {
     #The value of the address, eg. "Halfdansgade 10, 2., 2300 København S"
 	  adresseTekst: String!
   
-    brugervendtNoegleTekst:String
+    brugervendtNoegle:String
   
     # Details from Klassifikation  
     # Value from Klassification, eg. "Postadresse", "E-mail"  
@@ -69,9 +69,8 @@ type ITSystem {
   uuid: UUID!
  
   # Name of the IT-Systemin Fælleskommunalt Administrationsmodul
-  navn: String
-  
-    
+  itSystemNavn: String
+      
 }
 
 
@@ -103,16 +102,9 @@ type OrganisationEnhed {
     opgaver:[Opgave!]!
     itSystemer:[ITSystem!]!
   
- 
-    # Best practices ? documentation 
-    # Paging         ?        
-    #users:[Users!]!  
-    #	medlemskaber: [Medlemskab!]!
-    #users: [UUID]
-    # bruger: [Bruger]
-    #users: [Medlemskab]
+    # List of medlemskaber
+    medlemskaber(rolle:[UUID!]): [Medlemskab!]!
      
-  
 }
 
 
@@ -141,7 +133,7 @@ type Organisation {
     uuid: UUID!
   
    # Name of the Organisation
-    organisationNavn: String!
+    organisationsnavn: String!
     # Externally given key
     brugervendtNoegle: String!
     # Myndighed
@@ -169,8 +161,10 @@ type Medlemskab {
   
   # the related organisationsenhed 
   medlemAf: OrganisationEnhed
+  bruger:Bruger
   
   # Typicaly a job title
+  # Naming - taken from oio -v2?
   medlemskabRolle: String
   
   # Externally given key
@@ -178,7 +172,7 @@ type Medlemskab {
     
   # UUID to klassifikation 
   #eg. 02e61900-33e0-407f-a2a7-22f70221f003/57553824-5ed0-4a64-b8aa-7e801df264f6/46c73630-f7ad-4000-9624-c06131cde671
-  funktionsTypeUUID: UUID
+  funktionsTypeUuid: UUID
   #Enhedsrolle (Arbejder i)/ ansat i/ Lederrolle
   funktionsTypeTitel: String
   
@@ -186,11 +180,7 @@ type Medlemskab {
   # narrow possible view. 
   start: DateTime
   slut: DateTime
-      
-  # date from # calculated min of interval .... 
-  # date to   
-  
-    
+     
 }
 
 
@@ -208,19 +198,17 @@ type Bruger {
   # 9de1426d-2ffb-4d3b-95aa-2afdec22c133 for "Ekstern bruger"
   # fe5bec29-0709-4b45-b935-2748ff554c7a for "Intern bruger"
   # fb24bae4-beb1-4970-9a94-cf7ce215f63c, for "Non-Person Entity bruger" 
-  brugerTypeUUID:UUID!
+  brugerTypeUuid:UUID
   
   #The title from Klassifikation, 
   #Ekstern bruger, Intern bruger, Non-Person Entity bruger
-  brugerTypeTitel: String
+  brugerTypeRolleTitel: String
   
   tilstand: Tilstand
 
-  # Will be added later
-  #person: Person
+  person: Person
 
-  #Will be added later 
-  #adresser(rolle: [UUID!]): [Adresse!]!
+  adresser(rolle: [UUID!]): [Adresse!]!
   
   # Only include Active in the list!
   harMedlemsskab(rolle: [UUID!]): [Medlemskab!]!
@@ -230,15 +218,20 @@ type Bruger {
 
 #one person can have multiple users ...... 
 type Person {
+  
   uuid: UUID!
-    
-  # cpr name .... 
+  navn: String!
+  # Externally given key
+  brugervendtNoegle: String
+  cpr: CPR
+ 
 }
 
 type Query {
   	
  	# If the root node is in the result, it is the first element of the list
-  organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter, ITSystemer:[UUID!] ): [OrganisationEnhed]
+	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter, ITSystemer:[UUID!] ): [OrganisationEnhed]
+    
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
   organisation(cvr: CVR!): Organisation
   
@@ -250,6 +243,9 @@ type Query {
 # String xx, xx.xx, or xx.xx.xx
 # Right padded wildcards, '*', is supported
 scalar KLE
+
+# 10 digit number
+scalar CPR
 
 # 8 digit number - ID of the business assigned by Danish business Authority 
 scalar CVR
