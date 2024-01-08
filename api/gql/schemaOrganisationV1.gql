@@ -3,7 +3,7 @@
 type Myndighed {
     uuid: UUID!
     # Number, 3 or 4 digits, which identifies an authority.
-    myndighedsKode: String!
+    myndighedskode: String!
 }
 
 #Forretningsobjektet Virksomhed er en udvidelse til Organisation, så der kan registreres et CVR-nummer, og dermed etableres en relation til CVR-registeret. En virksomhed er oprettet i CVR-registreret med et CVR-nummer, der efter opslag i CVR-registreret kan give adgang til oplysninger om virksomheden. Der registreres derfor alene CVR-nummer i Fælleskommunalt Organisationssystem.
@@ -29,8 +29,8 @@ type Adresse {
     #Id of the address, eg. "c31d2c7b-26fe-4a5f-b4da-f99961c78991"
   	uuid:  UUID!
     
-    #The value of the address, eg. "Halfdansgade 10, 2., 2300 København S"
-	  adresseTekst: String!
+	  #The value of the address, eg. "Halfdansgade 10, 2., 2300 København S"
+ 	  adresseTekst: String!
   
     brugervendtNoegle:String
   
@@ -63,7 +63,7 @@ type Opgave {
 
 #Logiske it-systemer, registeret i Fælleskommunalt Administrationsmodul. 
 # ()
-type ITSystem {
+type ItSystem {
  
   # The uuid of the IT-system in Fælleskommunalt Administrationsmodul
   uuid: UUID!
@@ -100,7 +100,7 @@ type OrganisationEnhed {
   
     adresser(rolle: [UUID!]): [Adresse!]!
     opgaver:[Opgave!]!
-    itSystemer:[ITSystem!]!
+    itSystemer:[ItSystem!]!
   
     # List of medlemskaber
     medlemskaber(rolle:[UUID!]): [Medlemskab!]!
@@ -211,19 +211,28 @@ type Bruger {
   adresser(rolle: [UUID!]): [Adresse!]!
   
   # Only include Active in the list!
-  harMedlemsskab(rolle: [UUID!]): [Medlemskab!]!
+  harMedlemskab(rolle: [UUID!]): [Medlemskab!]!
   
     
 }
 
+directive @PersonDataConstraint(constraint : PersonDataConstraintType!) on FIELD_DEFINITION
+
+#  ... data limitaion in service agreement ”SeNavn” og ”SeCPR-nummer” 
+enum PersonDataConstraintType {
+    SENAVN,
+    SECPR
+} 
+
 #one person can have multiple users ...... 
 type Person {
-  
+    
   uuid: UUID!
-  navn: String!
+  navn: String @PersonDataConstraint(constraint: SENAVN)
   # Externally given key
   brugervendtNoegle: String
-  cpr: CPR
+  cpr: CPR  @PersonDataConstraint(constraint: SECPR)
+  
  
 }
 
