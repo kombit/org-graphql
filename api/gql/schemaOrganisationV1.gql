@@ -1,3 +1,64 @@
+
+# --------------------------------------------------------------------------------
+# Scalars and data constraints
+# --------------------------------------------------------------------------------
+
+# String "xx", "xx.xx", or "xx.xx.xx"
+# Right padded wildcards, '*', is supported
+scalar KLE
+
+# String, 10 digit number
+scalar CPR
+
+# String, 8 digit number - ID of the business assigned by Danish business Authority 
+scalar CVR
+
+# Universally Unique IDentifier (RFC4122), eg. 0235dc7b-11c4-4ee5-b685-9f638f5cd032
+scalar UUID
+
+# Date and time, ISO 8601 
+scalar DateTime
+
+#paginating cursor
+scalar Cursor
+
+directive @PersonDataConstraint(constraint : PersonDataConstraintType!) on FIELD_DEFINITION
+#  ... data limitaion in service agreement ”SeNavn” og ”SeCPR-nummer” 
+
+enum PersonDataConstraintType {
+    SENAVN,
+    SECPR
+} 
+
+# The valid states
+enum TilstandStatus {
+    AKTIV
+    INAKTIV
+}
+
+type OrganisationEnhedConnection {
+    edges: [OrganisaionEnhedEdge]
+    pageInfo: PageInfo!
+}
+
+type OrganisaionEnhedEdge {
+    cursor: Cursor
+    node: OrganisationEnhed!
+}
+
+type PageInfo {
+    startCursor: Cursor
+    endCursor: Cursor
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+}
+
+
+# --------------------------------------------------------------------------------
+# Organization and units
+# --------------------------------------------------------------------------------
+
+
 # Forretningsobjektet Myndighed er en udvidelse til forretningsobjektet Organisation. En myndighed har en lovudøvende funktion. Kommunerne og store dele af den øvrige offentlige administration er offentlige myndigheder. Objektet Myndighed tilknyttes en Organisation 
 # (The public authoirity)
 type Myndighed {
@@ -14,15 +75,107 @@ type Virksomhed {
     cvrNummerTekst: CVR!
 }
 
-# what do we call this kind of relation where we have type, rolle and index ???
-type KlassifikationRelation {
-  # The id of the relation type in Klassifikation, eg. 9b33c0a0-a566-4ec0-8200-325cb1e5bb9a for address for organization unit 
-  type: UUID!
-  # The id of the relation role in Klassifikation, eg  80b610c6-314b-485a-a014-a9a1d7070bc4 for Postadresse
-  rolle: UUID!
+# Forretningsobjektet Organisation repræsenterer en juridisk enhed. En kommune er et eksempel på en organisation. En organisation skal altid tilknyttes et virksomhedsobjekt og for myndigheders vedkommende et myndighedsobjekt. Dermed sikres, at CVR-nummer og eventuel myndighedskode kan føres tilbage til den gældende organisation.
+#A legal entity, typically a municipality 
+type Organisation {
+    uuid: UUID!
   
-  indeks: String!  
+   	# Name of the Organisation
+    organisationsnavn: String!
+    # Externally given key
+    brugervendtNoegle: String!
+    # Myndighed
+    myndighed: Myndighed
+    # Virksomhed
+    virksomhed: Virksomhed!
+    # The root entity
+    organisationEnhed: OrganisationEnhed!
 }
+
+# Forretningsobjektet OrganisationEnhed kan være et center, en afdeling, en sektion, et kontor, et team, en institiution eller lignende. Kommunens administrative organisation er opbygget af OrganisationEnheder.
+#(The organisation unit)
+type OrganisationEnhed {
+    uuid: UUID!
+    
+    # Name of the Unit
+    enhedsnavn: String!
+    # Brugervendt identifikation af objektet, dvs. identifikation fra kildesystemet for data
+
+  	# Externally given key
+    brugervendtNoegle: String
+
+  	# The child nodes 
+    underliggendeEnheder: [OrganisationEnhed!]!
+    
+  	# The parrent node
+    overordnetEnhed: OrganisationEnhed
+    
+    # The state object
+    tilstand: Tilstand!
+    
+  	# The Organization
+    tilhoerer: Organisation!
+  
+    adresser(rolle: [UUID!]): [Adresse!]!
+    opgaver:[Opgave!]!
+    itSystemer:[ItSystem!]!
+  
+    # List of medlemskaber
+    medlemskaber(rolle:[UUID!]): [OrganisationEnhedMedlemskab!]!
+     
+}
+
+
+# --------------------------------------------------------------------------------
+# User and person
+# --------------------------------------------------------------------------------
+
+type Bruger {
+  uuid: UUID!
+  
+  # An unique name for the user in the Organization, typically the IT user name.
+  brugernavn:String!
+  
+  # Externally given key
+  brugervendtNoegle: String
+  
+  # UUID to klassifikation: 
+  # eg. 
+  # 9de1426d-2ffb-4d3b-95aa-2afdec22c133 for "Ekstern bruger"
+  # fe5bec29-0709-4b45-b935-2748ff554c7a for "Intern bruger"
+  # fb24bae4-beb1-4970-9a94-cf7ce215f63c, for "Non-Person Entity bruger" 
+  brugerTypeUuid:UUID
+  
+  #The title of the role - from Klassifikation, 
+  #Ekstern bruger, Intern bruger, Non-Person Entity bruger
+  brugerTypeRolleTitel: String
+  
+  tilstand: Tilstand!
+
+  person: Person
+
+  adresser(rolle: [UUID!]): [Adresse!]!
+  
+  # Only include Active in the list!
+  harMedlemskab(rolle: [UUID!]): [BrugerMedlemskab!]!
+  
+    
+}
+
+
+#one person can have multiple users ...... 
+type Person {
+    
+  uuid: UUID!
+  navn: String @PersonDataConstraint(constraint: SENAVN)
+  # Externally given key
+  brugervendtNoegle: String
+  cpr: CPR  @PersonDataConstraint(constraint: SECPR)
+}
+
+
+
+
 
 type Adresse {
     
@@ -61,8 +214,9 @@ type Opgave {
   
 }
 
+
 #Logiske it-systemer, registeret i Fælleskommunalt Administrationsmodul. 
-# ()
+# (IT system, as registred in "Fælleskommunalt Administrationsmodul")
 type ItSystem {
  
   # The uuid of the IT-system in Fælleskommunalt Administrationsmodul
@@ -73,39 +227,6 @@ type ItSystem {
       
 }
 
-
-# Forretningsobjektet OrganisationEnhed kan være et center, en afdeling, en sektion, et kontor, et team, en institiution eller lignende. Kommunens administrative organisation er opbygget af OrganisationEnheder.
-#(The organisation unit)
-type OrganisationEnhed {
-    uuid: UUID!
-    
-    # Name of the Unit
-    enhedNavn: String!
-    # Brugervendt identifikation af objektet, dvs. identifikation fra kildesystemet for data
-
-  	# Externally given key
-    brugervendtNoegle: String
-
-  	# The child nodes 
-    underliggendeEnheder: [OrganisationEnhed!]!
-    
-  	# The parrent node
-    overordnetEnhed: OrganisationEnhed
-    
-    # The state object
-    tilstand: Tilstand!
-    
-  	# The Organization
-    tilhoerer: Organisation!
-  
-    adresser(rolle: [UUID!]): [Adresse!]!
-    opgaver:[Opgave!]!
-    itSystemer:[ItSystem!]!
-  
-    # List of medlemskaber
-    medlemskaber(rolle:[UUID!]): [Medlemskab!]!
-     
-}
 
 
 # The state of the object with a interval of when the state is in effect [fraTidspunkt, tilTidspunkt[ 
@@ -120,52 +241,33 @@ type Tilstand {
     tilTidspunkt: DateTime 
 }
 
-# The valid states
-enum TilstandStatus {
-    AKTIV
-    INAKTIV
-}
 
 
-# Forretningsobjektet Organisation repræsenterer en juridisk enhed. En kommune er et eksempel på en organisation. En organisation skal altid tilknyttes et virksomhedsobjekt og for myndigheders vedkommende et myndighedsobjekt. Dermed sikres, at CVR-nummer og eventuel myndighedskode kan føres tilbage til den gældende organisation.
-#A legal entity, typically a municipality 
-type Organisation {
-    uuid: UUID!
+
+# what do we call this kind of relation where we have type, rolle and index ???
+type KlassifikationRelation {
+  # The id of the relation type in Klassifikation, eg. 9b33c0a0-a566-4ec0-8200-325cb1e5bb9a for address for organization unit 
+  type: UUID!
+  # The id of the relation role in Klassifikation, eg  80b610c6-314b-485a-a014-a9a1d7070bc4 for Postadresse
+  rolle: UUID!
   
-   # Name of the Organisation
-    organisationsnavn: String!
-    # Externally given key
-    brugervendtNoegle: String!
-    # Myndighed
-    myndighed: Myndighed
-    # Virksomhed
-    virksomhed: Virksomhed!
-    # The root entity
-    organisationEnhed: OrganisationEnhed!
+  indeks: String!  
 }
 
-# if rolle is omitted no units are filtered out base on rolle.
-input KLEFilter {
-	rolle:UUID
-  kleNummer:[KLE!]!
-}
+
 
 
 # https://arkitektur.digst.dk/specifikationer/organisation/oio-specifikation-af-model-organisation
 # aka. organisatorisk tilknytning
 # Describes the relation between a Bruger(user) and OrganisationEnhed (Org. unit)
-type Medlemskab {
+interface Medlemskab {
 
   # uuid of the underlying organisationFunktion 
   uuid: UUID!
   
-  # the related organisationsenhed 
-  medlemAf: OrganisationEnhed
-  bruger:Bruger
-  
   # Typicaly a job title
   # Naming - taken from oio -v2?
-  medlemskabRolle: String
+  medlemskabRolleTitel: String
   
   # Externally given key
   brugervendtNoegle: String
@@ -183,84 +285,45 @@ type Medlemskab {
      
 }
 
-
-type Bruger {
-  uuid: UUID!
-  
-  # An unique name for the user in the Organization, typically the IT user name.
-  brugernavn:String!
-  
-  # Externally given key
-  brugervendtNoegle: String
-  
-  # UUID to klassifikation: 
-  # eg. 
-  # 9de1426d-2ffb-4d3b-95aa-2afdec22c133 for "Ekstern bruger"
-  # fe5bec29-0709-4b45-b935-2748ff554c7a for "Intern bruger"
-  # fb24bae4-beb1-4970-9a94-cf7ce215f63c, for "Non-Person Entity bruger" 
-  brugerTypeUuid:UUID
-  
-  #The title from Klassifikation, 
-  #Ekstern bruger, Intern bruger, Non-Person Entity bruger
-  brugerTypeRolleTitel: String
-  
-  tilstand: Tilstand
-
-  person: Person
-
-  adresser(rolle: [UUID!]): [Adresse!]!
-  
-  # Only include Active in the list!
-  harMedlemskab(rolle: [UUID!]): [Medlemskab!]!
-  
-    
+type BrugerMedlemskab implements Medlemskab {
+    uuid: UUID!
+    medlemskabRolleTitel: String
+    brugervendtNoegle: String
+    funktionsTypeUuid: UUID
+    funktionsTypeTitel: String
+    start: DateTime
+    slut: DateTime
+    # the related organisationsenhed
+    medlemAf: OrganisationEnhed
 }
 
-directive @PersonDataConstraint(constraint : PersonDataConstraintType!) on FIELD_DEFINITION
+type OrganisationEnhedMedlemskab implements Medlemskab {
+    uuid: UUID!
+    medlemskabRolleTitel: String
+    brugervendtNoegle: String
+    funktionsTypeUuid: UUID
+    funktionsTypeTitel: String
+    start: DateTime
+    slut: DateTime
+    # the related Bruger
+    bruger: Bruger
+}
 
-#  ... data limitaion in service agreement ”SeNavn” og ”SeCPR-nummer” 
-enum PersonDataConstraintType {
-    SENAVN,
-    SECPR
-} 
 
-#one person can have multiple users ...... 
-type Person {
-    
-  uuid: UUID!
-  navn: String @PersonDataConstraint(constraint: SENAVN)
-  # Externally given key
-  brugervendtNoegle: String
-  cpr: CPR  @PersonDataConstraint(constraint: SECPR)
-  
- 
+# if rolle is omitted no units are filtered out base on rolle.
+input KleFilter {
+	rolle:UUID
+  kleNummer:[KLE!]!
 }
 
 type Query {
-  	
- 	# If the root node is in the result, it is the first element of the list
-	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KLEFilter, ITSystemer:[UUID!] ): [OrganisationEnhed]
-    
-  organisationEnhed(uuid: UUID!): OrganisationEnhed 
+  
   organisation(cvr: CVR!): Organisation
   
-  # Filter on eg. e-mail and other addresses 
+ 	# If the root node is in the result, it is the first element of the list
+	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KleFilter, itSystemer:[UUID!], first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
+  organisationEnhed(uuid: UUID!): OrganisationEnhed 
   bruger(uuid: [UUID!]!): [Bruger]
  
 }
 
-# String xx, xx.xx, or xx.xx.xx
-# Right padded wildcards, '*', is supported
-scalar KLE
-
-# 10 digit number
-scalar CPR
-
-# 8 digit number - ID of the business assigned by Danish business Authority 
-scalar CVR
-
-# Universally Unique IDentifier (RFC4122)
-scalar UUID
-
-# ISO 8601 
-scalar DateTime
