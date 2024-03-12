@@ -148,7 +148,6 @@ type Bruger {
   
   #The title of the role - from Klassifikation, 
   #Ekstern bruger, Intern bruger, Non-Person Entity bruger
-  brugerTypeRolleTitel: String
   
   tilstand: Tilstand!
 
