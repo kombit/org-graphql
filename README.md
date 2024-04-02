@@ -583,7 +583,7 @@ The Organisation-GraphQL application will return the following application-speci
 
 
 ## Organisation GraphQL Sandbox
-You can go to `https://organisation.eksterntest-stoettesystemerne.dk/organisation/graphiql/1` and play with sample data. To be able to do so, you must retrieve and add a JWT token.
+You can go to `https://organisation.eksterntest-stoettesystemerne.dk/organisation/graphiql/1/?path=/organisation/organisationhent/1` and play with sample data. To be able to do so, you must retrieve and add a JWT token.
 
 ### Getting JWT token
 To get the JWT token, make a POST request to: `https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue?client_id=http://stoettesystemerne.dk/service/organisation/3&grant_type=client_credentials&scope=entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:11111111` with your certificate. You will get the token in response, under `access_token`:
