@@ -228,7 +228,7 @@ type Opgave {
   opgaveRolleTitel:String
   
   # Details from Klassifikation- not fillled in for Henvendelsteder 
-  klassifikation: KlassifikationRelation!
+  klassifikation: KlassifikationRelation
   
 }
 
@@ -267,7 +267,7 @@ type KlassifikationRelation {
   # The id of the relation type in Klassifikation, eg. 9b33c0a0-a566-4ec0-8200-325cb1e5bb9a for address for organization unit 
   type: UUID!
   # The id of the relation role in Klassifikation, eg  80b610c6-314b-485a-a014-a9a1d7070bc4 for Postadresse
-  rolle: UUID
+  rolle: UUID!
   
   indeks: String!  
 }
