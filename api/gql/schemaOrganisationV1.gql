@@ -47,6 +47,19 @@ type OrganisaionEnhedEdge {
 }
 
 
+
+type BrugerConnection {
+    edges: [BrugerEdge]
+    pageInfo: PageInfo!
+}
+
+type BrugerEdge {
+    cursor: Cursor
+    node: Bruger!
+}
+
+
+
 type PageInfo {
     startCursor: Cursor
     endCursor: Cursor
@@ -334,6 +347,24 @@ input KleFilter {
   kleNummer:[KLE!]!
 }
 
+
+# *@kmd.dk, j*kmd.*
+
+  # - BrugerNavn = "xxx*"
+  # - (adresseRolle, adresseTekst*) = (uuid, "*.kombit.dk ")
+  # - personNavn = "xxx*" (seperate filter for person?? NB. datarestriction) 
+  # - personCpr (data restriction!!) 
+
+
+  
+  
+  
+input AdresseRolleFilter {
+    # UUID of the Rolle from Klassification, eg. xxx for the users email address 
+  	rolle: UUID!
+    tekst:String!
+}
+
 type Query {
   
   organisation(cvr: CVR!): Organisation
@@ -345,19 +376,20 @@ type Query {
   # Adjust so it can take a list of uuid as input - like bruger?
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
   
-  # TODO:
-  # Either Extend this - or make query with pagination
-  # Optional filter (check Klefilter - possibility?) -
-  # - BrugerNavn = "xxx*"
-  # - (adresseRolle, adresseTekst*) = (uuid, "*.kombit.dk ")
-  # - personNavn = "xxx*" (seperate filter for person?? NB. datarestriction) 
-  # - personCpr (data restriction!!) 
+  
     
   bruger(uuid: [UUID!]!): [Bruger]
   
+  # Optional filters
+  # - brugerNavn = "xxx*x", wildcard *supported
+  # - Brugertype = UUID from Klassifikation
+  # - brugerAdresse = (uuid, "*.kombit.dk ")
+  # - personNavn = "xx*x*", data restrction 
+  # - personCPR =  "xx*x*", data restrction 
   
-  # 
+  brugerListe(cvr: CVR!, status:TilstandStatus!, brugerNavn: String, brugerType: UUID, brugerAdresse: AdresseRolleFilter, personNavn: String, personCPR: CPR, first: Int, last: Int, after: Cursor, before: Cursor): BrugerConnection
   
+
  
 }
 
