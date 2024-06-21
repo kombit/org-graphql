@@ -341,28 +341,30 @@ type OrganisationEnhedMedlemskab implements Medlemskab {
 }
 
 
+
 # if rolle is omitted no units are filtered out base on rolle.
 input KleFilter {
 	rolle:UUID
   kleNummer:[KLE!]!
 }
 
-
-# *@kmd.dk, j*kmd.*
-
-  # - BrugerNavn = "xxx*"
-  # - (adresseRolle, adresseTekst*) = (uuid, "*.kombit.dk ")
-  # - personNavn = "xxx*" (seperate filter for person?? NB. datarestriction) 
-  # - personCpr (data restriction!!) 
-
-
-  
-  
-  
+ 
 input AdresseRolleFilter {
     # UUID of the Rolle from Klassification, eg. xxx for the users email address 
   	rolle: UUID!
     tekst:String!
+}
+
+input PersonFilter { 
+    navn: String
+    cpr: CPR
+}
+
+input BrugerFilter {
+  brugernavn:String
+  adresseRolleFilter: AdresseRolleFilter
+  brugerTypeUuid:UUID
+  personFilter:PersonFilter
 }
 
 type Query {
@@ -370,26 +372,17 @@ type Query {
   organisation(cvr: CVR!): Organisation
   
  	# If the root node is in the result, it is the first element of the list
-	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KleFilter, itSystemer:[UUID!], first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
+  	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KleFilter, itSystemer:[UUID!], first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
+  #organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, FILTER, first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
+  
   
   # TODO:
   # Adjust so it can take a list of uuid as input - like bruger?
   organisationEnhed(uuid: UUID!): OrganisationEnhed 
-  
-  
-    
-  bruger(uuid: [UUID!]!): [Bruger]
-  
-  # Optional filters
-  # - brugerNavn = "xxx*x", wildcard *supported
-  # - Brugertype = UUID from Klassifikation
-  # - brugerAdresse = (uuid, "*.kombit.dk ")
-  # - personNavn = "xx*x*", data restrction 
-  # - personCPR =  "xx*x*", data restrction 
-  
-  brugerListe(cvr: CVR!, status:TilstandStatus!, brugerNavn: String, brugerType: UUID, brugerAdresse: AdresseRolleFilter, personNavn: String, personCPR: CPR, first: Int, last: Int, after: Cursor, before: Cursor): BrugerConnection
-  
-
- 
+        
+  bruger(uuid: [UUID!]!): [Bruger]   
+  brugerListe(cvr: CVR!, status:TilstandStatus!, brugerFilter: BrugerFilter, first: Int, last: Int, after: Cursor, before: Cursor): BrugerConnection
+   
 }
+
 
