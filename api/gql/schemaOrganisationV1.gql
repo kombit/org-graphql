@@ -372,15 +372,12 @@ type Query {
   organisation(cvr: CVR!): Organisation
   
  	# If the root node is in the result, it is the first element of the list
-  	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KleFilter, itSystemer:[UUID!], first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
-  #organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, FILTER, first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
+ 	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KleFilter, itSystemer:[UUID!], first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
   
-  
-  # TODO:
-  # Adjust so it can take a list of uuid as input - like bruger?
-  organisationEnhed(uuid: UUID!): OrganisationEnhed 
+  organisationEnhed(uuid: [UUID!]!): [OrganisationEnhed]
         
   bruger(uuid: [UUID!]!): [Bruger]   
+  
   brugerListe(cvr: CVR!, status:TilstandStatus!, brugerFilter: BrugerFilter, first: Int, last: Int, after: Cursor, before: Cursor): BrugerConnection
    
 }
