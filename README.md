@@ -12,7 +12,7 @@ You can also use our [live sandbox](#organisation-graphql-sandbox) to familiariz
 
 ### Required request headers
 In order for your request to be executed correctly, it will have to contain the following headers:
-- `Authorization`, which should contain the bearer JWT token (see for instance [Getting JWT token in Postman](#Getting-JWT-token-in-Postman) for details on how to obtain the token),
+- `Authorization`, which should contain the bearer JWT token (see for instance [Getting JWT token in Postman](#Getting-JWT-token-in-Postman) for details on how to obtain the token,
 - `x-TransaktionsId`, which should be an UUID,
 - `x-TransaktionsTid`, which should be an ISO-compliant datetime,
 
@@ -129,6 +129,44 @@ query OrganisationEnhed {
   }
 }
 ```
+##### Query `organisationEnhed` with the `henvendelsessteder` section:
+
+The henvendelsessteder (contact points) is used to indicates if the citizen needs to use the contact information registered on a different organisation unit than the current one. 
+
+An organisation unit can be related to several other organisation units - each relation marked with an opgave (task). 
+
+The query below demonstrates how to fetch the henvendelsessteder for an organizational unit, including address information and opgavers (tasks) that describe the unit. Opgave is a class in the “KLE” classification.
+
+```
+query OrganisationEnhed {
+  organisationEnhed(uuid: "c36b0331-3876-4d57-90ff-7447f783191d") {
+    uuid
+    enhedsnavn
+    brugervendtNoegle
+
+    henvendelsessteder {
+      uuid
+      navn
+      henvendelsesOrganisationEnhed {
+        uuid
+        enhedsnavn
+        brugervendtNoegle
+        adresser {
+          uuid
+          adresseTekst
+          adresseRolleTitel
+        }
+      }
+      opgave {
+        uuid
+        kleEmneNummer
+        kleEmneTitel
+      }
+    }
+  }
+}
+```
+
 
 ####  Query `organisationEnhedListe`:
 This description covers the pagination mechanism based on the following `organisationEnhedListe` query:
@@ -223,7 +261,7 @@ The following example demonstrates how to use the pagination mechanism:
 - [GraphQL Cursor Connections Specification: ](https://relay.dev/graphql/connections.htm/) The pagination mechanism was constructed based on the resources described in the specification.
 - [GraphQL Pagination: ](https://graphql.org/learn/pagination/) A link to the pagination description for GraphQL.
 
-#####Query `organisationEnhedListe` with the `opgaver` parameter:
+##### Query `organisationEnhedListe` with the `opgaver` parameter:
 The following query will search for active organizational units in Korsbæk Kommune with tasks (opgaver) associated with the `role UUID '2a5f38d8-7092-4b3f-85cc-7e272c3c4bb0'` (Ansvarlig) and KLE numbers starting with `'00.01*'`, **or** having exactly `'02.05.02'`. The `kleNummer` field in the `opgaver` parameter is a collection, allowing for multiple elements.
          		
 ```
@@ -306,7 +344,7 @@ query OrganisationEnheList {
   }
 }
 ```
-#####Query `organisationEnhedListe` with the `itSystemer` parameter:
+##### Query `organisationEnhedListe` with the `itSystemer` parameter:
 You can query for Organisation Units that have IT Systems with given UUIDs linked to them. 
 
 To do that, pass the optional `itSystemer` parameter to the `organisationEnhedListe` query. The parameter takes a list of UUIDs. The response will contain all Organisation Units that have at least one of the IT Systems linked to them.
@@ -361,7 +399,7 @@ query Bruger {
   }
 }
 ```
-#####Query `bruger` with the `person` section:
+##### Query `bruger` with the `person` section:
 A `person` is an extension of the business object `bruger` (User). A person never exists without a linked user item. A `person` represents an individual and is employed to register employees or other individuals with a link to the municipality. It is exclusively used for registering a `navn` (name) and possibly a `CPR` number.
 
 By default, a person's `navn` and `CPR` number are not included in the output. If you wish to provide the user access to this personal data, you can implement two data restrictions:
@@ -384,7 +422,7 @@ query Bruger {
 }
 
 ```
-#####Query `bruger` with the `adresser` section:
+##### Query `bruger` with the `adresser` section:
 The `adresser` section can be filtered using the `rolle` UUID argument. The `rolle` argument can be provided as a single UUID or an array of UUIDs. Avaiable roles are maintained in the FK Klassifikation system. If the `rolle` argument is not used, then all roles will be presented in the response.
 
 The query below illustrates a scenario in which a user requests:
@@ -583,7 +621,10 @@ The Organisation-GraphQL application will return the following application-speci
 
 
 ## Organisation GraphQL Sandbox
-You can go to `https://organisation.eksterntest-stoettesystemerne.dk/organisation/graphiql/1/?path=/organisation/organisationhent/1` and play with sample data. To be able to do so, you must retrieve and add a JWT token.
+You can go to `https://organisation.eksterntest-stoettesystemerne.dk/organisation/graphiql/1` and play with sample data. To be able to do so, you must retrieve and add a JWT token.
+
+
+`https://organisation.eksterntest-stoettesystemerne.dk/organisation/graphiql/1/?path=/organisation/organisationhent/1`
 
 ### Getting JWT token
 To get the JWT token, make a POST request to: `https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue?client_id=http://stoettesystemerne.dk/service/organisation/3&grant_type=client_credentials&scope=entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:11111111` with your certificate. You will get the token in response, under `access_token`:
@@ -594,17 +635,32 @@ To get the JWT token, make a POST request to: `https://n2adgangsstyring.eksternt
         "expires_in": 28800
     }
 
-### Getting JWT token in Postman
-To make a request for token in Postman, do the following:
-1. Add your `.p12` certificate file as a PFX file.
-Go to Settings -> Certificates -> Add Certificate and add the certificate for `
-n2adgangsstyring.eksterntest-stoettesystemerne.dk` domain, under the **Client Certificates** section: https://learning.postman.com/docs/sending-requests/certificates/
-2. In Request settings, make sure that `TLS v1.3` is disabled:
-![image.png](./Images/tls.png)
-3. Make a `POST` request to `https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue?client_id=http://stoettesystemerne.dk/service/organisation/3&grant_type=client_credentials&scope=entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:11111111`.
-![image.png](./Images/post.png)
-If you want a token for a different CVR, change the `anvenderkontekst` at the end of the request, i.e.:
-`https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue?client_id=http://stoettesystemerne.dk/service/organisation/3&grant_type=client_credentials&scope=entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:99999999`
+### Getting JWT Token in Postman
+
+To request a JWT token in Postman, follow these steps:
+
+1. **Add Your `.p12` Certificate File as a PFX File**:
+    - Navigate to **Settings -> Certificates**.
+    - Under the **Client Certificates** section, add the certificate for `n2adgangsstyring.eksterntest-stoettesystemerne.dk` domain.
+    - For more detailed instructions, refer to [Postman documentation on certificates](https://learning.postman.com/docs/sending-requests/certificates/).
+
+2. **Disable `TLS v1.3` in Request Settings**:
+    - Ensure that `TLS v1.3` is disabled in the request settings:  
+      ![image.png](/.attachments/image-9f6b5e97-c368-49af-8726-4e99d8aa47f3.png)
+
+3. **Make a `POST` Request**:
+    - URL: `https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue`
+    - Add the following keys as `x-www-form-urlencoded` in the Body:
+
+| Key        | Value                                                                 |
+|------------|-----------------------------------------------------------------------|
+| client_id  | http://stoettesystemerne.dk/service/organisation/3                    |
+| grant_type | client_credentials                                                    |
+| scope      | entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:11111111 |
+
+4. **Token for a Different CVR**:
+    - If you need a token for a different CVR, change the `anvenderkontekst` value in the scope.
+
 
 ### Adding headers in GraphiQL 
 
@@ -667,4 +723,5 @@ https://organisation.stottesysterne.dk/organisation/organisationhent/1
 ## Feedback and support
 We value your feedback and are committed to providing exceptional support. If you have any questions or have suggestions for improvement, please don't hesitate to contact us at [FKI@kombit.dk]
 
+## Support
 If you encounter any issues, please don't hesitate to contact our support team at [SLA og åbningstider](https://digitaliseringskataloget.dk/sla-og-aabningstider).
