@@ -12,7 +12,7 @@ You can also use our [live sandbox](#organisation-graphql-sandbox) to familiariz
 
 ### Required request headers
 In order for your request to be executed correctly, it will have to contain the following headers:
-- `Authorization`, which should contain the bearer JWT token (see for instance [Getting JWT token in Postman](#Getting-JWT-token-in-Postman) for details on how to obtain the token),
+- `Authorization`, which should contain the bearer JWT token (see for instance [Getting JWT token in Postman](#Getting-JWT-token-in-Postman) for details on how to obtain the token,
 - `x-TransaktionsId`, which should be an UUID,
 - `x-TransaktionsTid`, which should be an ISO-compliant datetime,
 
@@ -586,25 +586,36 @@ The Organisation-GraphQL application will return the following application-speci
 You can go to `https://organisation.eksterntest-stoettesystemerne.dk/organisation/graphiql/1/?path=/organisation/organisationhent/1` and play with sample data. To be able to do so, you must retrieve and add a JWT token.
 
 ### Getting JWT token
-To get the JWT token, make a POST request to: `https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue?client_id=http://stoettesystemerne.dk/service/organisation/3&grant_type=client_credentials&scope=entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:11111111` with your certificate. You will get the token in response, under `access_token`:
 
-    {
-        "access_token": "eyJhbGciOiJQUzI1NiIsImtpZCI6ImYtdWVWSmozOTcyQmlxTmFBSnBXdkM2QkNWayIsIng1dCI6ImYtdWVWSmozOTcyQmlxTmFBSnBXdkM2QkNWayIsInR5cCI6IkpXVCJ9.eyJjdnIiOiIxMTExMTExMSIsInNwZWNfdmVyIjoiMS4wIiwicHJpdiI6ImV5SndjbWwyYVd4bFoyVm5jbTkxY0hNaU9sdDdJbkJ5YVhacGJHVm5aU0k2SW1oMGRIQTZMeTl2Y21kaGJtbHpZWFJwYjI0dVpHVjJMV1F0YzNSekxtdHRaRzVsZEM1a2F5OXliMnhsY3k5elpYSjJhV05sYzNsemRHVnRjbTlzWlM5eVpXUnBaMlZ5THpFaUxDSnpZMjl3WlNJNkluVnlianBrYXpwbmIzWTZjMkZ0YkRwamRuSk9kVzFpWlhKSlpHVnVkR2xtYVdWeU9qRXhNVEV4TVRFeElpd2lZMjl1YzNSeVlXbHVkSE1pT2x0ZGZTeDdJbkJ5YVhacGJHVm5aU0k2SW1oMGRIQTZMeTl2Y21kaGJtbHpZWFJwYjI0dVpHVjJMV1F0YzNSekxtdHRaRzVsZEM1a2F5OXliMnhsY3k5elpYSjJhV05sYzNsemRHVnRjbTlzWlM5MVpITjBhV3d2TVNJc0luTmpiM0JsSWpvaWRYSnVPbVJyT21kdmRqcHpZVzFzT21OMmNrNTFiV0psY2tsa1pXNTBhV1pwWlhJNk1URXhNVEV4TVRFaUxDSmpiMjV6ZEhKaGFXNTBjeUk2VzExOVhYMD0iLCJqdGkiOiJkMTNlNDY0Yi0zYTBlLTQ5MTEtOGI0Ny05ODU4ODJkNjQ2ODgiLCJzdWIiOiJodHRwOi8vc3RvZXR0ZXN5c3RlbWVybmUuZGsvc2VydmljZS9vcmdhbmlzYXRpb24vMyIsImNuZiI6eyJ4NXQjUzI1NiI6IkdhUkpwaVdrallLbFVYTlRLTVpmQWRDRmJDeVZ3SzM3X1Z2QmdzMnJVX2sifSwibmJmIjoxNjk2NTA1NjE5LCJleHAiOjE2OTY1MzQ0MTksImlhdCI6MTY5NjUwNTYxOSwiaXNzIjoiaHR0cHM6Ly9zYW1sLm4yYWRnYW5nc3N0eXJpbmcudGVzdC1zdHMua21kbmV0LmRrL3J1bnRpbWUvIiwiYXVkIjoiaHR0cDovL3N0b2V0dGVzeXN0ZW1lcm5lLmRrL3NlcnZpY2Uvb3JnYW5pc2F0aW9uLzMifQ.LSDl5OJ6cY7Hh1mqoeVbEQoEXuT1r-Se6gTDJrTSZHSB2OGUWPwfm0TPFy-nt-XH_h__Xc8Sq-sNJ72xpwUil2RzTNZwkjzo-P7L_XzB6sc6s2-pIN9sid5rDCXK602GbQ8aY39QhPidZc_UGgmcO587I_9wBwprDJjFWWHV6GJm0r4I_u2zBNvYAkEEMmGSxBsK9_2xoWkWGfaNvG50vCm-kzHyey9rCXEsJT5DihdaYhPZUKuTwGnO9Z0DlDoiFd5LkqDSaoRzsxwog8Lov_7YovjbKUPyqTbz32DFkxkS6n5NMX8lXaPsPMfxqUIAVYG2GeuVLIFgXjB_fYWOz3oVwiI641O_BBFPzgJGEWNXF3wj8OC7vwsclCCOgzCbihLQ0i5-a3fHu60UuHjzQVnKv9af5s51ay-ifWEbV-VIrsnnWlw4vxfR_r39AwjE9sEZiT2x3pfPueyxun9Q_DKAFXy1wyy5Kgf_hdikMsAZpeFTCqtiiWOGcVToW_sZ",
-        "token_type": "Holder-of-key",
-        "expires_in": 28800
-    }
+The GraphQL API requires a JWT token in the header of the request. The issuing of tokens is handled by Adgangsstyrring. The documentation is available at  
+[digitaliseringskataloget](https://digitaliseringskataloget.dk/integration/sf1514)
 
-### Getting JWT token in Postman
-To make a request for token in Postman, do the following:
-1. Add your `.p12` certificate file as a PFX file.
-Go to Settings -> Certificates -> Add Certificate and add the certificate for `
-n2adgangsstyring.eksterntest-stoettesystemerne.dk` domain, under the **Client Certificates** section: https://learning.postman.com/docs/sending-requests/certificates/
-2. In Request settings, make sure that `TLS v1.3` is disabled:
-![image.png](./Images/tls.png)
-3. Make a `POST` request to `https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue?client_id=http://stoettesystemerne.dk/service/organisation/3&grant_type=client_credentials&scope=entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:11111111`.
-![image.png](./Images/post.png)
-If you want a token for a different CVR, change the `anvenderkontekst` at the end of the request, i.e.:
-`https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue?client_id=http://stoettesystemerne.dk/service/organisation/3&grant_type=client_credentials&scope=entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:99999999`
+### Example of how to get JWT Token in Postman
+
+To request a JWT token in Postman, follow these steps:
+
+1. **Add Your `.p12` Certificate File as a PFX File**:
+    - Navigate to **Settings -> Certificates**.
+    - Under the **Client Certificates** section, add the certificate for `n2adgangsstyring.eksterntest-stoettesystemerne.dk` domain.
+    - For more detailed instructions, refer to [Postman documentation on certificates](https://learning.postman.com/docs/sending-requests/certificates/).
+
+2. **Disable `TLS v1.3` in Request Settings**:
+    - Ensure that `TLS v1.3` is disabled in the request settings:  
+      ![image.png](/.attachments/image-9f6b5e97-c368-49af-8726-4e99d8aa47f3.png)
+
+3. **Make a `POST` Request**:
+    - URL: `https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/api/rest/oauth/v1/issue`
+    - Add the following keys as `x-www-form-urlencoded` in the Body:
+
+| Key        | Value                                                                 |
+|------------|-----------------------------------------------------------------------|
+| client_id  | http://stoettesystemerne.dk/service/organisation/3                    |
+| grant_type | client_credentials                                                    |
+| scope      | entityid:http://stoettesystemerne.dk/service/organisation/3,anvenderkontekst:11111111 |
+
+4. **Token for a Different CVR**:
+    - If you need a token for a different CVR, change the `anvenderkontekst` value in the scope.
+
 
 ### Adding headers in GraphiQL 
 
