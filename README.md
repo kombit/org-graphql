@@ -38,7 +38,10 @@ Queries for details of individual organisation units by UUID, optionally fetchin
 - OrganisationEnhedListe
 Used to query for all active or inactive Organisation Units belonging to a given CVR. There's also optional argument opgaver - containing rolle uuid and collection of KLE numbers. 
 - Bruger
-Used to query for an individual or list of Brugers by UUIDs. 
+Used to query for an individual or list of Brugers by UUIDs.
+- BrugerListe
+Used to search for one or a list of Brugers by BrugerFilter (brugernavn, brugerTypeUuid, adresseRolleFilter, PersonFilter (navn, CPR)).
+*To use PersonFilter, the user must have the necessary rights for the following data restrictions: SeNavn, SeCPR
 
 Note also that all GraphQL queries support drilling down to get details of the returned objects.
 
@@ -507,6 +510,173 @@ Membership fields `start` and `slut` are calculated based on the documentation a
 The calculation of the start date for organizational affiliation is performed by taking the latest (max) date among the following three possible dates: `orgFunk.Tilstand.VirkningFra`, `orgFunk.TilknyttedeBrugere.VirkningFra`, `orgFunk.TilknyttedeEnheder.VirkningFra`.
 
 Similarly, the calculation of the possible end date for organizational affiliation is done by taking the earliest (min) date among the following three possible dates: `orgFunk.Tilstand.VirkningTil`, `orgFunk.TilknyttedeBrugere.VirkningTil`, `orgFunk.TilknyttedeEnheder.VirkningTil`.
+
+#### Query `brugerListe`:
+
+The `brugerListe` query retrieves a list of users (Bruger) associated with a given organisation (CVR number). It allows filtering based on user attributes, status, and pagination.
+
+##### Notes
+- The brugerFilter allows for precise filtering, reducing the amount of data retrieved.
+- Pagination parameters (first, last, after, before) help in efficient data retrieval.
+- To access CPR numbers,  `SeNavn` and `SeCPR` permissions are required due to data protection constraints.
+
+##### Query Schema
+```graphql
+brugerListe(
+    cvr: CVR!
+    status: TilstandStatus!
+    brugerFilter: BrugerFilter
+    first: Int
+    last: Int
+    after: Cursor
+    before: Cursor
+): BrugerConnection
+```
+
+###### Parameters
+- **cvr** *(CVR!)*: The unique 8-digit identifier for a organisation.
+- **status** *(TilstandStatus!)*: The status of the users (either `AKTIV` or `INAKTIV`).
+- **brugerFilter** *(BrugerFilter)* *(Optional)*: Filters to refine the search based on user attributes.
+  - `brugernavn` *(String)*: Filter by username.
+  - `brugerTypeUuid` *(UUID)*: Filter by user type. The list of UUIDs can be found in Fælleskommunalt Klassifikationssystem.
+  - `adresseRolleFilter` *(UUID)*: Filter based on address roles. The list of UUIDs can be found in Fælleskommunalt Klassifikationssystem.
+  - `personFilter` *(PersonFilter)*: Filter by person name or CPR number.
+
+###### Pagination Parameters
+- **first** *(Int)* *(Optional)*: Number of results to return from the beginning.The default value is **500**.
+- **last** *(Int)* *(Optional)*: Number of results to return from the end. The default value is **500**.
+- **after** *(Cursor)* *(Optional)*: Pagination cursor to retrieve results after a certain point. This value should be obtained from `pageInfo.endCursor` in the previous response.
+- **before** *(Cursor)* *(Optional)*: Pagination cursor to retrieve results before a certain point. This value should be obtained from `pageInfo.startCursor` in the previous response.
+
+###### Pagination Information
+
+The following pagination information is available in the response:
+
+- pageInfo: An object containing the following fields:
+    - hasNextPage: A boolean value indicating whether there are more pages of results.
+    - hasPreviousPage: A boolean value indicating whether there is a previous page of results.
+    - startCursor: The cursor for the first page of results.
+    - endCursor: The cursor for the next page of results.
+- edges: A list of elements on the current page. Each element contains the following fields:
+    - cursor: The cursor for the current element.
+    - node: The current element.
+
+**Notes**
+- The pagination mechanism is based on cursors, which are unique identifiers for elements.
+- Cursors can change over time, so it's important to store them and use them in subsequent queries.
+- The maximum number of elements that can be returned in a single call is 500. 
+- It is possible to request a specific number of elements, but it is not guaranteed that the server will return the exact number.
+- Using pagination, you can't mix parameters `first` with `last` and `after` with `before`.
+
+**Additional Resources**
+- [GraphQL Cursor Connections Specification: ](https://relay.dev/graphql/connections.htm/) The pagination mechanism was constructed based on the resources described in the specification.
+- [GraphQL Pagination: ](https://graphql.org/learn/pagination/) A link to the pagination description for GraphQL.
+
+##### Response Structure
+Returns a `BrugerConnection` object containing:
+- **edges** *(BrugerEdge[])*: List of user edges with cursor and node data.
+- **pageInfo** *(PageInfo!)*: Pagination details, including cursors and availability of additional pages.
+
+##### BrugerEdge
+```graphql
+type BrugerEdge {
+    cursor: Cursor
+    node: Bruger!
+}
+```
+
+##### Bruger
+```graphql
+type Bruger {
+    uuid: UUID!
+    brugernavn: String!
+    brugervendtNoegle: String
+    brugerTypeUuid: UUID
+    brugerTypeTitel: String
+    tilstand: Tilstand!
+    person: Person
+    adresser(rolle: [UUID!]): [Adresse!]
+    harMedlemskab(rolle: [UUID!]): [BrugerMedlemskab!]!
+}
+```
+
+##### Usage Examples
+
+###### 1. Retrieve Active Users for a Organisation
+```graphql
+query {
+    brugerListe(cvr: "12345678", status: AKTIV) {
+        edges {
+            node {
+                uuid
+                brugernavn
+                brugerTypeTitel
+            }
+        }
+    }
+}
+```
+**Response:**
+```json
+{
+    "data": {
+        "brugerListe": {
+            "edges": [
+                {
+                    "node": {
+                        "uuid": "0235dc7b-11c4-4ee5-b685-9f638f5cd032",
+                        "brugernavn": "jdoe",
+                        "brugerTypeTitel": "Intern bruger"
+                    }
+                }
+            ]
+        }
+    }
+}
+```
+
+###### 2. Retrieve Users whose starts with a Specific Username
+```graphql
+query {
+    brugerListe(cvr: "12345678", status: AKTIV, brugerFilter: {brugernavn: "jdoe*"}) {
+        edges {
+            node {
+                uuid
+                brugernavn
+                person {
+                    navn
+                }
+            }
+        }
+    }
+}
+```
+
+###### 3. Paginated Query for Users
+```graphql
+query {
+    brugerListe(cvr: "12345678", status: AKTIV, first: 10, after: "cursor123") {
+        edges {
+            cursor
+            node {
+                brugernavn
+                brugerTypeTitel
+            }
+        }
+        pageInfo {
+            hasNextPage
+            endCursor
+        }
+    }
+}
+```
+
+1. Execute the query with the `first` parameter set to the desired number of elements.
+2. If `pageInfo.hasNextPage` is `true`, execute the query again with the `after` parameter set to `pageInfo.endCursor`.
+3. Repeat step 2 until there are no more pages of results.
+
+**Note:** The usage of `last` and `before` parameters would be similar, but they would navigate the results in the opposite direction (retrieving elements from the end or the beginning, respectively).
+ 
 
 ## Error handling
 
