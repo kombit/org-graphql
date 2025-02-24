@@ -46,12 +46,27 @@ type OrganisaionEnhedEdge {
     node: OrganisationEnhed!
 }
 
+
+
+type BrugerConnection {
+    edges: [BrugerEdge]
+    pageInfo: PageInfo!
+}
+
+type BrugerEdge {
+    cursor: Cursor
+    node: Bruger!
+}
+
+
+
 type PageInfo {
     startCursor: Cursor
     endCursor: Cursor
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
 }
+
 
 
 # --------------------------------------------------------------------------------
@@ -79,7 +94,7 @@ type Virksomhed {
 #A legal entity, typically a municipality 
 type Organisation {
     uuid: UUID!
-  
+    	
    	# Name of the Organisation
     organisationsnavn: String!
     # Externally given key
@@ -122,7 +137,23 @@ type OrganisationEnhed {
   
     # List of medlemskaber
     medlemskaber(rolle:[UUID!]): [OrganisationEnhedMedlemskab!]!
+  
+  	  	
+  	henvendelsessteder: [Henvendelsessted!]!
      
+}
+
+
+type Henvendelsessted {
+  # uuid of the underlying organisationFunktion 
+  uuid: UUID!
+  
+  navn: String!
+  henvendelsesOrganisationEnhed: OrganisationEnhed!
+  opgave: Opgave
+  
+  
+  
 }
 
 
@@ -158,8 +189,7 @@ type Bruger {
   
   # Only include Active in the list!
   harMedlemskab(rolle: [UUID!]): [BrugerMedlemskab!]!
-  
-    
+      
 }
 
 
@@ -207,10 +237,11 @@ type Opgave {
   kleEmneTitel: String
   
   # "Ansvarlig", "Udførende", "Informeret"
+  # Not filled in for Henvendelsteder
   opgaveRolleTitel:String
   
-  # Details from Klassifikation
-  klassifikation: KlassifikationRelation!    
+  # Details from Klassifikation- not fillled in for Henvendelsteder 
+  klassifikation: KlassifikationRelation
   
 }
 
@@ -310,10 +341,30 @@ type OrganisationEnhedMedlemskab implements Medlemskab {
 }
 
 
+
 # if rolle is omitted no units are filtered out base on rolle.
 input KleFilter {
 	rolle:UUID
   kleNummer:[KLE!]!
+}
+
+ 
+input AdresseRolleFilter {
+    # UUID of the Rolle from Klassification, eg. xxx for the users email address 
+  	rolle: UUID!
+    tekst:String!
+}
+
+input PersonFilter { 
+    navn: String
+    cpr: CPR
+}
+
+input BrugerFilter {
+  brugernavn:String
+  adresseRolleFilter: AdresseRolleFilter
+  brugerTypeUuid:UUID
+  personFilter:PersonFilter
 }
 
 type Query {
@@ -321,9 +372,14 @@ type Query {
   organisation(cvr: CVR!): Organisation
   
  	# If the root node is in the result, it is the first element of the list
-	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KleFilter, itSystemer:[UUID!], first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
-  organisationEnhed(uuid: UUID!): OrganisationEnhed 
-  bruger(uuid: [UUID!]!): [Bruger]
- 
+ 	organisationEnhedListe(cvr: CVR!, status: TilstandStatus!, opgaver:KleFilter, itSystemer:[UUID!], first: Int, last: Int, after: Cursor, before: Cursor): OrganisationEnhedConnection
+  
+  organisationEnhed(uuid: [UUID!]!): [OrganisationEnhed]
+        
+  bruger(uuid: [UUID!]!): [Bruger]   
+  
+  brugerListe(cvr: CVR!, status:TilstandStatus!, brugerFilter: BrugerFilter, first: Int, last: Int, after: Cursor, before: Cursor): BrugerConnection
+   
 }
+
 
