@@ -699,6 +699,7 @@ You can expect this type of error response for unauthorized requests, requests w
 |-|-|-|
 |`BadRequest`|`400`|Returned when one of the additional header fields - `x-TransaktionsId` or `x-TransaktionsTid` are missing or invalid.|
 |`Unauthorized`| `401`| Returned when the request contains no JWT token, the token is invalid.|
+| `Request Timeout` | `408` | Occurs when the system takes longer than **120** seconds to respond to a request. This timeout error typically happens when the system is processing a large number of objects or a complex query.<br>Recommendations:<br>**Reduce the Number of Objects**: If you are querying paginated data, try limiting the number of objects per page to reduce the load on the system.<br>**Simplify the Query**: Consider optimizing or simplifying the query to ensure it can be processed within the allotted time frame. |
 |`Internal ServerError`|`500`|Other cases where the system responds with an error.|
 |`Service Unavailable`|`503`|Returned when the application / requested data subset is temporarily out of service due to ongoing data synchronisation.|
 
