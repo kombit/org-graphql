@@ -6,7 +6,7 @@ The Organisation GraphQL Service is designed to provide an efficient and flexibl
 The current snapshot of data available in "Fælleskommunalt Organisationssystem" can queried - and the ambition is to support integrators in getting the relevant data easy - using modern and mature technology. 
 
 ## Getting Started
-To start using our Organisation GraphQL Service make an authenticated GraphQL request to `https://organisation.stoettesystemerne.dk/organisation/organisationhent/1` and start retrieving data.
+To start using our Organisation GraphQL Service make an authenticated GraphQL request in the external test environment to `https://organisation.eksterntest-stoettesystemerne.dk/organisation/organisationhent/1` and start retrieving data.
 
 You can also use our [live sandbox](#organisation-graphql-sandbox) to familiarize yourself with the application and the schema.
 
